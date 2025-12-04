@@ -1,0 +1,80 @@
+/* Color palette */
+:root {
+    --primary-orange: #FF8C00;
+    --accent-orange: #FFA743;
+    --friendly-orange: #FFF3E0;
+    --white: #FFFFFF;
+    --black: #000000;
+}
+
+/* Buttons */
+button, .btn {
+    background-color: var(--primary-orange) !important;
+    color: var(--white) !important;
+    height: 3em;
+    width: 100%;
+    font-size: 20px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin: 20px 0 10px 0;
+    display: flex;
+    align-items: center;      
+    justify-content: center;  
+    text-align: center;     
+    padding: 0 20px;         
+    line-height: 1;          
+}
+
+button:hover, .btn:hover {
+    background-color: var(--accent-orange) !important;
+    color: var(--white) !important;
+}
+
+h1 {
+    font-weight: bold;   
+    color: var(--black); 
+    text-align: center; 
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: var(--white);
+    color: var(--black);
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 2em;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 15px;
+    background-color: var(--friendly-orange);
+    font-size: 1rem;
+}
+
+.cart-item .name {
+    font-weight: bold;
+    color: var(--black);
+}
+
+.cart-item .details {
+    text-align: right;
+    color: var(--black);
+}
+
+.cart-total {
+    text-align: right;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 15px;
+}
