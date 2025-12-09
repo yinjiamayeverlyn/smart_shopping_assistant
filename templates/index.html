@@ -9,8 +9,10 @@
 <body>
 <div class="container text-center mt-3">
     <h1>Smart Shopping Assistant</h1>
-    <a href="{{ url_for('scan') }}" class="btn btn-primary">Start Scan</a>
-    <a href="{{ url_for('cart') }}" class="btn btn-primary">View Cart</a>
+    <a href="{{ url_for('scan') }}" class="btn btn-primary" data-text="Start scan">Start Scan</a>
+    <a href="{{ url_for('cart') }}" class="btn btn-primary" data-text="View cart">View Cart</a>
+
+    <script src="{{ url_for('static', filename='tts.js') }}"></script>
 </div>
 </body>
 </html>

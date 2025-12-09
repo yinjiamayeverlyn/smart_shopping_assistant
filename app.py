@@ -1,5 +1,7 @@
-from flask import Flask, render_template, Response, request, session, redirect, url_for
+from flask import Flask, render_template, Response, send_file, send_from_directory, jsonify, request, session, redirect, url_for
 import cv2
+import os
+from gtts import gTTS
 from ultralytics import YOLO
 import threading
 
@@ -44,6 +46,28 @@ def cart():
     cart_items = session.get('cart', [])
     total_price = sum(item['price']*item['quantity'] for item in cart_items)
     return render_template("cart.html", cart=cart_items, total=total_price)
+
+
+
+TTS_DIRECTORY = 'static/tts_output'
+os.makedirs(TTS_DIRECTORY, exist_ok=True)
+
+BUTTON_TEXTS = ['Start scan', 'View cart', 'Finish']  
+
+def generate_tts_audio_files():
+    for text in BUTTON_TEXTS:
+        filename = os.path.join(TTS_DIRECTORY, f"{text}.mp3")
+        if not os.path.exists(filename):  
+            tts = gTTS(text)
+            tts.save(filename)
+
+generate_tts_audio_files()
+
+@app.route('/static/tts_output/<filename>')
+def serve_audio(filename):
+    return send_from_directory(TTS_DIRECTORY, filename)
+
+
 
 # ---- Video Feed ----
 def gen_frames():

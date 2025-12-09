@@ -24,7 +24,7 @@
         </div>
 
         <form id="finishForm" method="post" action="{{ url_for('finish_cart') }}">
-            <button type="submit" class="btn">Finish</button>
+            <button type="submit" class="btn" data-text="Finish">Finish</button>
         </form>
     {% else %}
         <p class="text-center">Cart is empty.</p>

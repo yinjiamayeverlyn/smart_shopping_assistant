@@ -13,7 +13,8 @@ button, .btn {
     color: var(--white) !important;
     height: 3em;
     width: 100%;
-    font-size: 20px;
+    font-size: 20pt;
+    font-weight: bold;
     border-radius: 50px;
     border: none;
     cursor: pointer;
