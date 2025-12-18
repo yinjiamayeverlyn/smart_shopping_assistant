@@ -15,8 +15,11 @@ button, .btn {
     width: 100%;
     font-size: 20pt;
     font-weight: bold;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: var(--black);
     border-radius: 50px;
-    border: none;
+    border-width: 0.5em;
+    border-color: var(--black);
     cursor: pointer;
     transition: background-color 0.2s ease;
     margin: 20px 0 10px 0;

@@ -47,7 +47,11 @@ def cart():
     total_price = sum(item['price']*item['quantity'] for item in cart_items)
     return render_template("cart.html", cart=cart_items, total=total_price)
 
-
+@app.route('/get_cart_total')
+def get_cart_total():
+    cart_items = session.get('cart', [])
+    total_price = sum(item['price'] * item['quantity'] for item in cart_items)
+    return jsonify({'total': total_price})
 
 TTS_DIRECTORY = 'static/tts_output'
 os.makedirs(TTS_DIRECTORY, exist_ok=True)
@@ -60,6 +64,19 @@ def generate_tts_audio_files():
         if not os.path.exists(filename):  
             tts = gTTS(text)
             tts.save(filename)
+    
+    for item in PRODUCTS:
+        name = item.get("name")
+        filename = os.path.join(TTS_DIRECTORY, f"{name}.mp3")
+        if not os.path.exists(filename):  
+            tts = gTTS(name)
+            tts.save(filename)
+
+    filename = os.path.join(TTS_DIRECTORY, f"Your cart is empty.mp3")
+    if not os.path.exists(filename):  
+        tts = gTTS("Your cart is empty")
+        tts.save(filename)
+
 
 generate_tts_audio_files()
 

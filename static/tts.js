@@ -3,23 +3,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const speech = window.speechSynthesis;
     let utterance = null;
 
-    // Cache the audio files
+    // Cache the audio files for the buttons
     const audioCache = {};
 
     // Preload all audio files based on the buttons' data-text attributes
     ttsButtons.forEach(button => {
         const textToSpeak = button.getAttribute('data-text');
         if (textToSpeak) {
-            // Fetch audio file
             const audioUrl = `/static/tts_output/${textToSpeak}.mp3`; 
-            
-            // Cache the audio by URL
             const audio = new Audio(audioUrl);
             audioCache[textToSpeak] = audio;
         }
     });
 
-    // Play the audio for a given text
+    // Function to play the audio for a given text
     function speakText(text) {
         if (speech.speaking) {
             speech.cancel();
@@ -40,16 +37,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event listeners for button hover
-    ttsButtons.forEach(button => {
-        const textToSpeak = button.getAttribute('data-text');
-        button.addEventListener('mouseover', () => {
-            if (textToSpeak) {
-                speakText(textToSpeak);
-            }
-        });
+    function bindButtonEvents() {
+        document.querySelectorAll('.btn').forEach(button => {
+            const textToSpeak = button.getAttribute('data-text');
+            button.addEventListener('mouseover', () => {
+                if (textToSpeak) {
+                    speakText(textToSpeak);
+                }
+            });
 
-        button.addEventListener('mouseout', () => {
-            stopSpeaking();
+            button.addEventListener('mouseout', () => {
+                stopSpeaking();
+            });
         });
-    });
+    }
+
+    bindButtonEvents();
+
+    const observer = new MutationObserver(bindButtonEvents);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Announce the scanned item (name and price)
+    function handleItemScan(itemName, itemPrice) {
+        const textToSpeak = `Item scanned: ${itemName}. Price: $${itemPrice.toFixed(2)}.`;
+        speakText(textToSpeak);
+    }
+
+    const cartTotalElement = document.querySelector('.cart-total');
+    if (cartTotalElement) {
+        const cartTotal = parseFloat(cartTotalElement.getAttribute('data-total'));
+        
+        if (cartTotal > 0) {
+            // Announce the total cart price
+            const totalText = `Total cart price: RM${cartTotal.toFixed(2)}.`;
+            speakText(totalText);
+        }
+    }
+
 });

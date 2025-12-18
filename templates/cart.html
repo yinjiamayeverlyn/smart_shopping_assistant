@@ -28,7 +28,16 @@
         </form>
     {% else %}
         <p class="text-center">Cart is empty.</p>
+        
     {% endif %}
 </div>
+
+        <script>
+          const audioUrl = `/static/tts_output/Your cart is empty.mp3`;
+          const audio = new Audio(audioUrl);
+          console.log("Audio URL:", audioUrl); 
+          audio.play();
+        </script>
+
 </body>
 </html>

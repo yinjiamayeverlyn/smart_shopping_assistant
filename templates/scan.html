@@ -15,6 +15,8 @@
     <!-- View Cart Button -->
     <div>
         <a href="{{ url_for('cart') }}" class="btn btn-success" data-text="View cart">View Cart</a>
+        <script src="{{ url_for('static', filename='tts.js') }}"></script>
+
     </div>
 
     <!-- Modal -->
@@ -31,18 +33,19 @@
           </div>
           <div class="modal-footer">
             <button class="btn btn-primary" id="addCart">Add to Cart</button>
-            <a href="{{ url_for('cart') }}" class="btn btn-success" data-text="View cart">View Cart</a>
           </div>
         </div>
       </div>
     </div>
 </div>
 
-
 <script>
 function checkDetected(){
     $.get("/get_detected", function(data){
         if (data && data.name){
+
+            handleItemScan(data.name, parseFloat(data.price));
+
             $("#modalTitle").text(data.name);
             $("#modalPrice").text("Price: RM" + parseFloat(data.price).toFixed(2));
             $("#productModal").modal('show');
