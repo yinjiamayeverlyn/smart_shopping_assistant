@@ -11,7 +11,11 @@
       <backbutton onclick="goBack()">&#8249;</backbutton>
 
       <script>
-         function goBack() {
+    //      function goBack() {
+    //      $.post("/add_test_product", {quantity: 3}, function(){
+    //     $("#productModal").modal('hide');
+    // }) };   
+          function goBack() {
             window.history.back();
           }
       </script>
@@ -68,6 +72,7 @@ $("#addCart").click(function(){
         $("#productModal").modal('hide');
     });
 });
+
 
 $("#closeModal").click(function(){
     $.post("/cancel_detected", {}, function(){

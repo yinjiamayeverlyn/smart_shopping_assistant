@@ -201,6 +201,26 @@ def add_to_cart():
     session.modified = True
     return {'status':'ok'}
 
+# @app.route('/add_test_product', methods=['POST'])
+# def add_test_product():
+#     if 'cart' not in session:
+#         session['cart'] = []
+
+#     test_product = {
+#         'id': 123,  # example product id
+#         'name': 'Test Product',  # product name
+#         'price': 19.99  # product price
+#     }
+    
+#     quantity = int(request.form.get('quantity', 1))
+#     test_product['quantity'] = quantity
+
+#     session['cart'].append(test_product)
+#     session.modified = True
+    
+#     return {'status': 'ok', 'product': test_product}
+
+
 @app.route('/cancel_detected', methods=['POST'])
 def cancel_detected():
     global detected_product
