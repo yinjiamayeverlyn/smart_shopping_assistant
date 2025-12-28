@@ -7,6 +7,12 @@
     --black: #000000;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -moz-text-size-adjust: none;
+}
+
 /* Buttons */
 button, .btn {
     background-color: var(--primary-orange) !important;
@@ -22,7 +28,7 @@ button, .btn {
     border-color: var(--black);
     cursor: pointer;
     transition: background-color 0.2s ease;
-    margin: 20px 0 10px 0;
+    margin: 2em 0 1em 0;
     display: flex;
     align-items: center;      
     justify-content: center;  
@@ -50,7 +56,7 @@ body {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 100vw;
     margin: auto;
     padding: 2em;
 }
@@ -81,4 +87,9 @@ body {
     font-size: 1.2rem;
     font-weight: bold;
     margin-top: 15px;
+}
+
+#video, #canvas, #video-feed {
+  width: 100%;
+  height: auto;
 }

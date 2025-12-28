@@ -4,9 +4,13 @@ import os
 from gtts import gTTS
 from ultralytics import YOLO
 import threading
+from flask_socketio import SocketIO, emit, disconnect
+import base64
+import numpy as np
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Load YOLO model
 MODEL_PATH = "best.pt"
@@ -43,14 +47,14 @@ def scan():
 
 @app.route('/cart')
 def cart():
-    cart_items = session.get('cart', [])
-    total_price = sum(item['price']*item['quantity'] for item in cart_items)
-    return render_template("cart.html", cart=cart_items, total=total_price)
+    cart_products = session.get('cart', [])
+    total_price = sum(product['price']*product['quantity'] for product in cart_products)
+    return render_template("cart.html", cart=cart_products, total=total_price)
 
 @app.route('/get_cart_total')
 def get_cart_total():
-    cart_items = session.get('cart', [])
-    total_price = sum(item['price'] * item['quantity'] for item in cart_items)
+    cart_products = session.get('cart', [])
+    total_price = sum(product['price'] * product['quantity'] for product in cart_products)
     return jsonify({'total': total_price})
 
 TTS_DIRECTORY = 'static/tts_output'
@@ -65,8 +69,8 @@ def generate_tts_audio_files():
             tts = gTTS(text)
             tts.save(filename)
     
-    for item in PRODUCTS:
-        name = item.get("name")
+    for product in PRODUCTS:
+        name = product.get("name")
         filename = os.path.join(TTS_DIRECTORY, f"{name}.mp3")
         if not os.path.exists(filename):  
             tts = gTTS(name)
@@ -85,8 +89,52 @@ def serve_audio(filename):
     return send_from_directory(TTS_DIRECTORY, filename)
 
 
+# @socketio.on('video_frame')
+# def handle_frame(data):
 
-# ---- Video Feed ----
+#     global detected_product
+
+#     if not data or 'image' not in data:
+#         return
+
+#     # Decode base64 image
+#     img_bytes = base64.b64decode(data['image'])
+#     np_arr = np.frombuffer(img_bytes, np.uint8)
+#     frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+#     detections = []
+
+#     results = model.predict(frame, imgsz=640, conf=0.3)
+#     for res in results:
+#         for box in res.boxes:
+#             conf = float(box.conf[0])
+#             if conf < 0.5:
+#                 continue
+
+#             cls_idx = int(box.cls[0])
+#             x1, y1, x2, y2 = map(int, box.xyxy[0])
+
+#             detections.append({
+#                 "id": PRODUCTS[cls_idx]["id"],
+#                 "name": PRODUCTS[cls_idx]["name"],
+#                 "price": PRODUCTS[cls_idx]["price"],
+#                 "conf": conf,
+#                 "bbox": [x1, y1, x2, y2]
+#             })
+
+#     emit('detections', detections)
+
+
+# @socketio.on('stop_scan')
+# def handle_stop_scan():
+#     print(f"Client requested stop: {request.sid}")
+
+
+# @socketio.on('disconnect')
+# def handle_disconnect():
+#     print(f"Client disconnected: {request.sid}")
+
+#---- Video Feed ----#
 def gen_frames():
     global detected_product
     cap = cv2.VideoCapture(0)
@@ -157,4 +205,7 @@ def finish_cart():
 
 # ---- Run App ----
 if __name__ == "__main__":
-    app.run(debug=True)
+   #-- app.run(debug=True) --#
+     app.run(debug=True, host='0.0.0.0', port=5000)  
+    # socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+
