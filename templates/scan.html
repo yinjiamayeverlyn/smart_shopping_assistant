@@ -6,9 +6,25 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
+<header>
+      <backbutton onclick="goBack()">&#8249;</backbutton>
+
+      <script>
+         function goBack() {
+            window.history.back();
+          }
+      </script>
+
+      <settingsbutton onclick="">
+        <img src="{{ url_for('static', filename='img/language.svg') }}" alt="Language Icon" width="32" height="32">
+      </settingsbutton>
+
+    <h1>{{ _("Real-Time Scanning") }}</h1>
+</header>
+
 <body>
 <div class="container text-center mt-3">
-    <h1>Real-Time Scanning</h1>
 
     <img src="{{ url_for('video_feed') }}" id="video" width="640" height="480">
 
@@ -19,7 +35,7 @@
 
     <!-- View Cart Button -->
     <div>
-        <a href="{{ url_for('cart') }}" class="btn btn-success" data-text="View cart">View Cart</a>
+        <a href="{{ url_for('cart') }}" class="btn btn-success" data-text="View cart">{{ _("View Cart") }} <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" alt="Button Icon"> </a>
         <script src="{{ url_for('static', filename='tts.js') }}"></script>
 
     </div>
@@ -37,7 +53,7 @@
             Quantity: <input type="number" id="modalQty" value="1" min="1">
           </div>
           <div class="modal-footer">
-            <button class="btn btn-primary" id="addCart">Add to Cart</button>
+            <button class="btn btn-primary" id="addCart">{{ _("Add To Cart") }} <img src="{{ url_for('static', filename='img/add.svg') }}" alt="Button Icon"> </button>
           </div>
         </div>
       </div>

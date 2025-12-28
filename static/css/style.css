@@ -2,6 +2,8 @@
 :root {
     --primary-orange: #FF8C00;
     --accent-orange: #FFA743;
+    --accent-orange-dark: #ad5c00;
+    --accent-orange-light: #ffc079;
     --friendly-orange: #FFF3E0;
     --white: #FFFFFF;
     --black: #000000;
@@ -15,16 +17,14 @@ html {
 
 /* Buttons */
 button, .btn {
-    background-color: var(--primary-orange) !important;
-    color: var(--white) !important;
-    height: 3em;
+    background-color: var(--accent-orange-light) !important;
+    color: var(----black) !important;
+    height: 2.5em;
     width: 100%;
-    font-size: 20pt;
+    font-size: 28pt;
     font-weight: bold;
-    -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: var(--black);
     border-radius: 50px;
-    border-width: 0.5em;
+    border-width: 0.25em;
     border-color: var(--black);
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -34,23 +34,41 @@ button, .btn {
     justify-content: center;  
     text-align: center;     
     padding: 0 20px;         
-    line-height: 1;          
+    line-height: 1;        
+    box-shadow: 0.2em 0.7em 1.5em  rgba(0, 0, 0, 0.3);  
+    
 }
+
+button img, .btn img {
+    height: 1.2em;
+    width: 1.2em;
+    margin-left: 2.4em;
+}
+
 
 button:hover, .btn:hover {
     background-color: var(--accent-orange) !important;
-    color: var(--white) !important;
+    color: var(----black) !important;
+}
+
+header {
+    background-color: var(--accent-orange-dark);
+    box-shadow: 0px 0.35em 0.75em  rgba(0, 0, 0, 0.1);
 }
 
 h1 {
+    font-size: 28pt;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
     font-weight: bold;   
-    color: var(--black); 
+    color: var(--white); 
     text-align: center; 
     font-family: Arial, sans-serif;
+    text-shadow: 0.05em 0.05em 0.1em rgba(0, 0, 0, 0.3);
 }
 
 body {
-    background-color: var(--white);
+    background-color: var(--friendly-orange);
     color: var(--black);
     font-family: Arial, sans-serif;
 }
@@ -89,7 +107,35 @@ body {
     margin-top: 15px;
 }
 
+.empty-cart-image-center {
+    text-align: center;
+    margin-top: 2em;
+    opacity: 0.25;
+}
+
 #video, #canvas, #video-feed {
   width: 100%;
   height: auto;
+}
+
+backbutton, .backbutton {
+    font-size: 36pt;
+    color: var(--white);
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    left: 15px;
+    text-shadow: 0.05em 0.05em 0.1em rgba(0, 0, 0, 0.3);
+}
+
+settingsbutton, .settingsbutton {
+    font-size: 36pt;
+    color: var(--white);
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    right: 15px;
+    text-shadow: 0.05em 0.05em 0.1em rgba(0, 0, 0, 0.3);
 }

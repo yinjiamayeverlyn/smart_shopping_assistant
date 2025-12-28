@@ -4,13 +4,23 @@ import os
 from gtts import gTTS
 from ultralytics import YOLO
 import threading
-from flask_socketio import SocketIO, emit, disconnect
-import base64
-import numpy as np
+# from flask_socketio import SocketIO, emit, disconnect
+# import base64
+# import numpy as np
+from flask import Flask, session, request, redirect, url_for, g
+from flask_babel import Babel, gettext as _
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
-socketio = SocketIO(app, cors_allowed_origins="*")
+app.config['LANGUAGES'] = ['en', 'my', 'zh']
+
+babel = Babel(app)
+
+def get_locale():
+    # determines the best match for the user's language
+    return request.accept_languages.best_match(app.config['LANGUAGES'])
+
+# socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Load YOLO model
 MODEL_PATH = "best.pt"
