@@ -9,22 +9,16 @@
 </head>
 
 <header>
-      <backbutton onclick="goBack()">&#8249;</backbutton>
-
-      <script>
-         function goBack() {
-            window.history.back();
-          }
-      </script>
-
-        <settingsbutton onclick="">
+    <backbutton class="backbutton" onclick="goBack()">&#8249;</backbutton>
+         <script>
+             function goBack() {
+               window.history.back();
+             }
+          </script>
+    <h1>{{ _("Cart") }}</h1>
+    <settingsbutton class="settingsbutton">
         <img src="{{ url_for('static', filename='img/language.svg') }}" alt="Language Icon" width="32" height="32">
-      </settingsbutton>
-
-    <h1>{{ _("Your Cart") }}</h1>
-
-
-
+    </settingsbutton>
 </header>
 
 <body>
@@ -46,9 +40,18 @@
 
         <form id="finishForm" method="post" action="{{ url_for('finish_cart') }}">
             <button type="submit" class="btn" data-text="Finish">{{ _("Finish") }} <img src="{{ url_for('static', filename='img/finish.svg') }}" alt="Button Icon"> </button>
+                    <script src="{{ url_for('static', filename='tts.js') }}"></script>
+
         </form>
     {% else %}
         <p class="text-center">{{ _("Cart is empty.") }}</p>
+
+        <script>
+          const audioUrl = `/static/tts_output/Your cart is empty.mp3`;
+          const audio = new Audio(audioUrl);
+          console.log("Audio URL:", audioUrl); 
+          audio.play();
+        </script>
 
         <div class="empty-cart-image-center">      
                <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" width="640" height="480" alt="Button Icon">
@@ -58,12 +61,29 @@
     {% endif %}
 </div>
 
-        <script>
-          const audioUrl = `/static/tts_output/Your cart is empty.mp3`;
-          const audio = new Audio(audioUrl);
-          console.log("Audio URL:", audioUrl); 
-          audio.play();
-        </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const speech = window.speechSynthesis;
+
+        function speakText(text) {
+            if (speech.speaking) {
+                speech.cancel();
+            }
+            const utterance = new SpeechSynthesisUtterance(text);
+            speech.speak(utterance);
+        }
+
+        const cartTotalElement = document.querySelector('.cart-total');
+        
+        // If the cart total element exists, speak the total price
+        if (cartTotalElement) {
+            const cartTotalText = cartTotalElement.textContent.trim().replace('RM','');
+            speakText(cartTotalText + "Ringgits");
+        }
+    });
+</script>
+
 
 </body>
 </html>

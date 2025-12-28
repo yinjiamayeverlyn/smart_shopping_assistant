@@ -57,9 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const observer = new MutationObserver(bindButtonEvents);
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // Announce the scanned item (name and price)
-    function handleItemScan(itemName, itemPrice) {
-        const textToSpeak = `Item scanned: ${itemName}. Price: $${itemPrice.toFixed(2)}.`;
+    // Announce the scanned product (name and price)
+    function handleProductScan(productName, productPrice) {
+        const textToSpeak = `Product scanned: ${productName}. Price: $${productPrice.toFixed(2)}.`;
         speakText(textToSpeak);
     }
 

@@ -8,11 +8,11 @@
 </head>
 
 <header>
-    <settingsbutton onclick="">
-        <img src="{{ url_for('static', filename='img/language.svg') }}" alt="Language Icon" width="32" height="32">
-      </settingsbutton>
-
+        <backbutton class="backbutton" onclick=""></backbutton>
     <h1>{{ _("Smart Shopping Assistant") }}</h1>
+    <settingsbutton class="settingsbutton">
+        <img src="{{ url_for('static', filename='img/language.svg') }}" alt="Language Icon" width="32" height="32">
+    </settingsbutton>
 </header>
 
 <body>
