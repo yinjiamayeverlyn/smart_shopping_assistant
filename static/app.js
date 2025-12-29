@@ -70,7 +70,7 @@ setInterval(() => {
   const dataURL = canvas.toDataURL("image/jpeg");
   const base64 = dataURL.split(",")[1];
   socket.emit("video_frame", { image: base64 });
-}, 150); // 150ms delay per frame
+}, 500); 
 
 // Receive detections
 socket.on("detections", detections => {
@@ -97,29 +97,43 @@ socket.on("detections", detections => {
 
 
 function showProductModal(product) {
-  $("modalTitle").text(product.name);
-  $("modalPrice").text("Price: RM" + product.price.toFixed(2));
-  $("modalQty").val(1); 
-  $("productModal").modal("show");
+  $("#modalTitle").text(product.name);
+  $("#modalPrice").text("Price: RM" + parseFloat(product.price.toFixed(2)));
+  $("#modalQty").val(1); 
+   const modal = new bootstrap.Modal(
+     document.getElementById("productModal")
+    );
+  modal.show();
+
+    const textToSpeak = `Product scanned: ${product.name}. Price: ${productPrice.toFixed(2)}.`;
+    speakText(textToSpeak);
 
   window.currentProduct = product;
 }
 
-$("addCart").click(function() {
+$("#addCart").click(function() {
   if (window.currentProduct) {
     const qty = parseInt($("modalQty").val());
     $.post("/add_to_Cart", { quantity: qty }, function() {
-      $("productModal").modal("hide");
+
+         const modal = new bootstrap.Modal(
+     document.getElementById("productModal")
+    );
+  modal.hide();
+
       resumeScanning();
     });
+  } else {
   }
 });
 
-$("closeModal").click(function() {
-  $.post("/cancel_detected", {}, function() {
-    $("productModal").modal("hide");
-    resumeScanning();
-  });
+$("#closeModal").click(function() {
+   const modal = new bootstrap.Modal(
+     document.getElementById("productModal")
+    );
+  modal.hide();
+      resumeScanning();
+  
 });
 
 $("#productModal").on("hidden.bs.modal", function () {
@@ -146,32 +160,3 @@ function stopScanning() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-function navigate(path) {
-  if (window.location.pathname === "/scan") {
-    stopScanning(); 
-  }
-
-  requestAnimationFrame(() => {
-    history.pushState({}, "", path);
-    renderRoute(path);
-  });
-}
-
-
-document.addEventListener("click", (e) => {
-  const link = e.target.closest("a");
-  if (!link) return;
-
-  const href = link.getAttribute("href");
-  if (!href.startsWith("/")) return;
-
-   e.preventDefault(); 
-
-  if (window.location.pathname === "/scan") {
-    stopScanning();
-  }
-});
-
-
-window.addEventListener("beforeunload", stopScanning);
-window.addEventListener("pagehide", stopScanning);

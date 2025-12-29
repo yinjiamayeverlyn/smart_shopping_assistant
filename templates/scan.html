@@ -31,7 +31,7 @@
 
     <!-- View Cart Button -->
     <div>
-        <a href="{{ url_for('cart') }}" class="btn btn-success" data-text="View cart">{{ _("View Cart") }} <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" alt="Button Icon"> </a>
+        <a href="{{ url_for('cart') }}" class="btn btn-primary" data-text="View cart">{{ _("View Cart") }} <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" alt="Button Icon"> </a>
         <script src="{{ url_for('static', filename='tts.js') }}"></script>
 
     </div>
@@ -50,30 +50,14 @@
           </div>
           <div class="modal-footer">
             <button class="btn btn-primary" id="addCart">{{ _("Add To Cart") }} <img src="{{ url_for('static', filename='img/add.svg') }}" alt="Button Icon"> </button>
-              <a href="{{ url_for('cart') }}" class="btn btn-success" data-text="View cart">{{ _("View Cart") }}</a>
+                   <script src="{{ url_for('static', filename='tts.js') }}"></script>
+            <a href="{{ url_for('cart') }}" class="btn btn-primary" data-text="View cart">{{ _("View Cart") }} <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" alt="Button Icon"> </a>
           </div>
         </div>
       </div>
     </div>
 </div>
 
-<script>
-
-
-
-$("addCart").click(function(){
-    let qty = parseInt($("#modalQty").val());
-    $.post("/add_to_cart", {quantity: qty}, function(){
-        $("productModal").modal('hide');
-    });
-});
-
-
-$("closeModal").click(function(){
-    $.post("/cancel_detected", {}, function(){
-        $("productModal").modal('hide');
-    });
-});
 </script>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
