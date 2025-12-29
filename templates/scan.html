@@ -12,29 +12,22 @@
 <header>
     <backbutton class="backbutton" onclick="goBack()">&#8249;</backbutton>
            <script>
-            // function goBack() {
-            // $.post("/add_test_product", {quantity: 3}, function(){
-            //  $("#productModal").modal('hide');
-            // }) };   
             function goBack() {
               window.history.back();
             }
           </script>
     <h1>{{ _("Real-Time Scanning") }}</h1>
     <settingsbutton class="settingsbutton">
-        <img src="{{ url_for('static', filename='img/language.svg') }}" alt="Language Icon" width="32" height="32">
     </settingsbutton>
 </header>
 
 <body>
 <div class="container text-center mt-3">
 
-    <img src="{{ url_for('video_feed') }}" id="video" width="640" height="480">
 
-<!-- 
      <video id="video" autoplay playsinline width="640" height="480"></video>
      <canvas id="canvas" width="640" height="480"></canvas>
-     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script> -->
+     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <!-- View Cart Button -->
     <div>
@@ -48,7 +41,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="modalTitle">Product Detected</h5>
+            <h5 class="modal-title" id="modalTitle">{{ _("Product Detected") }}</h5>
             <button type="button" class="btn-close" id="closeModal"></button>
           </div>
           <div class="modal-body">
@@ -57,6 +50,7 @@
           </div>
           <div class="modal-footer">
             <button class="btn btn-primary" id="addCart">{{ _("Add To Cart") }} <img src="{{ url_for('static', filename='img/add.svg') }}" alt="Button Icon"> </button>
+              <a href="{{ url_for('cart') }}" class="btn btn-success" data-text="View cart">{{ _("View Cart") }}</a>
           </div>
         </div>
       </div>
@@ -65,17 +59,19 @@
 
 <script>
 
-$("#addCart").click(function(){
+
+
+$("addCart").click(function(){
     let qty = parseInt($("#modalQty").val());
     $.post("/add_to_cart", {quantity: qty}, function(){
-        $("#productModal").modal('hide');
+        $("productModal").modal('hide');
     });
 });
 
 
-$("#closeModal").click(function(){
+$("closeModal").click(function(){
     $.post("/cancel_detected", {}, function(){
-        $("#productModal").modal('hide');
+        $("productModal").modal('hide');
     });
 });
 </script>

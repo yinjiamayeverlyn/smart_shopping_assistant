@@ -4,9 +4,9 @@ import os
 from gtts import gTTS
 from ultralytics import YOLO
 import threading
-# from flask_socketio import SocketIO, emit, disconnect
-# import base64
-# import numpy as np
+from flask_socketio import SocketIO, emit, disconnect
+import base64
+import numpy as np
 from flask import Flask, session, request, redirect, url_for, g
 from flask_babel import Babel, gettext as _
 
@@ -20,7 +20,7 @@ def get_locale():
     # determines the best match for the user's language
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
-# socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Load YOLO model
 MODEL_PATH = "best.pt"
@@ -99,84 +99,84 @@ def serve_audio(filename):
     return send_from_directory(TTS_DIRECTORY, filename)
 
 
-# @socketio.on('video_frame')
-# def handle_frame(data):
+@socketio.on('video_frame')
+def handle_frame(data):
 
-#     global detected_product
+    global detected_product
 
-#     if not data or 'image' not in data:
-#         return
+    if not data or 'image' not in data:
+        return
 
-#     # Decode base64 image
-#     img_bytes = base64.b64decode(data['image'])
-#     np_arr = np.frombuffer(img_bytes, np.uint8)
-#     frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+    # Decode base64 image
+    img_bytes = base64.b64decode(data['image'])
+    np_arr = np.frombuffer(img_bytes, np.uint8)
+    frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-#     detections = []
+    detections = []
 
-#     results = model.predict(frame, imgsz=640, conf=0.3)
-#     for res in results:
-#         for box in res.boxes:
-#             conf = float(box.conf[0])
-#             if conf < 0.5:
-#                 continue
+    results = model.predict(frame, imgsz=640, conf=0.3)
+    for res in results:
+        for box in res.boxes:
+            conf = float(box.conf[0])
+            if conf < 0.5:
+                continue
 
-#             cls_idx = int(box.cls[0])
-#             x1, y1, x2, y2 = map(int, box.xyxy[0])
+            cls_idx = int(box.cls[0])
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-#             detections.append({
-#                 "id": PRODUCTS[cls_idx]["id"],
-#                 "name": PRODUCTS[cls_idx]["name"],
-#                 "price": PRODUCTS[cls_idx]["price"],
-#                 "conf": conf,
-#                 "bbox": [x1, y1, x2, y2]
-#             })
+            detections.append({
+                "id": PRODUCTS[cls_idx]["id"],
+                "name": PRODUCTS[cls_idx]["name"],
+                "price": PRODUCTS[cls_idx]["price"],
+                "conf": conf,
+                "bbox": [x1, y1, x2, y2]
+            })
 
-#     emit('detections', detections)
-
-
-# @socketio.on('stop_scan')
-# def handle_stop_scan():
-#     print(f"Client requested stop: {request.sid}")
+    emit('detections', detections)
 
 
-# @socketio.on('disconnect')
-# def handle_disconnect():
-#     print(f"Client disconnected: {request.sid}")
+@socketio.on('stop_scan')
+def handle_stop_scan():
+    print(f"Client requested stop: {request.sid}")
+
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print(f"Client disconnected: {request.sid}")
 
 #---- Video Feed ----#
-def gen_frames():
-    global detected_product
-    cap = cv2.VideoCapture(0)
-    while True:
-        success, frame = cap.read()
-        if not success:
-            break
+# def gen_frames():
+#     global detected_product
+#     cap = cv2.VideoCapture(0)
+#     while True:
+#         success, frame = cap.read()
+#         if not success:
+#             break
 
-        results = model.predict(frame, imgsz=640, conf=0.3)
-        for res in results:
-            for box in res.boxes:
-                cls_idx = int(box.cls[0])
-                conf = float(box.conf[0])
-                if conf > 0.5:
-                    with lock:
-                        detected_product = PRODUCTS[cls_idx]
+#         results = model.predict(frame, imgsz=640, conf=0.3)
+#         for res in results:
+#             for box in res.boxes:
+#                 cls_idx = int(box.cls[0])
+#                 conf = float(box.conf[0])
+#                 if conf > 0.5:
+#                     with lock:
+#                         detected_product = PRODUCTS[cls_idx]
 
-                    # Draw bounding box
-                    x1, y1, x2, y2 = map(int, box.xyxy[0])
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0,165,255), 2)
-                    cv2.putText(frame, f"{PRODUCTS[cls_idx]['name']} {conf:.2f}",
-                                (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,0), 2)
+#                     # Draw bounding box
+#                     x1, y1, x2, y2 = map(int, box.xyxy[0])
+#                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0,165,255), 2)
+#                     cv2.putText(frame, f"{PRODUCTS[cls_idx]['name']} {conf:.2f}",
+#                                 (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,0), 2)
 
-        # Encode frame for MJPEG stream
-        ret, buffer = cv2.imencode('.jpg', frame)
-        frame_bytes = buffer.tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+#         # Encode frame for MJPEG stream
+#         ret, buffer = cv2.imencode('.jpg', frame)
+#         frame_bytes = buffer.tobytes()
+#         yield (b'--frame\r\n'
+#                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+# @app.route('/video_feed')
+# def video_feed():
+#     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 # ---- API Endpoints ----
 @app.route('/get_detected')
@@ -236,6 +236,6 @@ def finish_cart():
 # ---- Run App ----
 if __name__ == "__main__":
    #-- app.run(debug=True) --#
-     app.run(debug=True, host='0.0.0.0', port=5000)  
-    # socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+   #  app.run(debug=True, host='0.0.0.0', port=5000, )  
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True, ssl_context=('cert.pem', 'key.pem'))
 

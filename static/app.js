@@ -2,22 +2,67 @@ const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-const socket = io("http://localhost:5000");
+const socket = io();
+
+
+let stream = null;
+let frameInterval = null;
+let scanningActive = true;
 
 // Request camera access
-navigator.mediaDevices.getUserMedia({ video: true })
-  .then(stream => {
-    video.srcObject = stream;
-  })
-  .catch(err => {
-    alert("Camera access denied. Please allow camera access.");
-  });
+navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
+.then(s => {
+  stream = s;
+  video.srcObject = stream;
+  startScanning();
+})
+.catch(err => {
+  alert("Error accessing camera: " + err.message);
+});
 
 // Resize canvas once video is ready
 video.onloadedmetadata = () => {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
 };
+
+//Start scanning
+function startScanning() {
+  if (frameInterval) return;
+
+  scanningActive = true;
+
+  frameInterval = setInterval(() => {
+    if (!scanningActive) return;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataURL = canvas.toDataURL("image/jpeg");
+    const base64 = dataURL.split(",")[1];
+
+    socket.emit("video_frame", { image: base64 });
+  }, 150);
+}
+
+//Pause when product is detected
+function pauseScanning() {
+  scanningActive = false;
+
+  if (frameInterval) {
+    clearInterval(frameInterval);
+    frameInterval = null;
+  }
+
+  video.pause();
+}
+
+//Resume
+function resumeScanning() {
+  if (!stream) return;
+
+  video.play();
+  startScanning();
+}
+
 
 // Send frames periodically
 setInterval(() => {
@@ -29,58 +74,57 @@ setInterval(() => {
 
 // Receive detections
 socket.on("detections", detections => {
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height); // redraw video frame
+  if (!scanningActive) return;
+
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
   detections.forEach(det => {
-    // Draw bounding box
     ctx.strokeStyle = "orange";
     ctx.lineWidth = 2;
     ctx.strokeRect(
-      det.bbox[0], // x1
-      det.bbox[1], // y1
-      det.bbox[2] - det.bbox[0], // width (x2 - x1)
-      det.bbox[3] - det.bbox[1] // height (y2 - y1)
-    );
-
-    ctx.fillStyle = "black";
-    ctx.fillText(
-      det.bbox[0], 
-      det.bbox[1] - 5 
+      det.bbox[0],
+      det.bbox[1],
+      det.bbox[2] - det.bbox[0],
+      det.bbox[3] - det.bbox[1]
     );
   });
 
-  // If an product is detected, show modal
   if (detections.length > 0) {
-    const firstDetection = detections[0];
-    showProductModal(firstDetection);
+    pauseScanning();
+    showProductModal(detections[0]);
   }
 });
 
+
 function showProductModal(product) {
-  $("#modalTitle").text(product.name);
-  $("#modalPrice").text("Price: RM" + product.price.toFixed(2));
-  $("#modalQty").val(1); 
-  $("#productModal").modal("show");
+  $("modalTitle").text(product.name);
+  $("modalPrice").text("Price: RM" + product.price.toFixed(2));
+  $("modalQty").val(1); 
+  $("productModal").modal("show");
 
   window.currentProduct = product;
 }
 
-$("#addCart").click(function() {
+$("addCart").click(function() {
   if (window.currentProduct) {
-    const qty = parseInt($("#modalQty").val());
+    const qty = parseInt($("modalQty").val());
     $.post("/add_to_Cart", { quantity: qty }, function() {
-      $("#productModal").modal("hide");
+      $("productModal").modal("hide");
+      resumeScanning();
     });
   }
 });
 
-$("#closeModal").click(function() {
+$("closeModal").click(function() {
   $.post("/cancel_detected", {}, function() {
-    $("#productModal").modal("hide");
+    $("productModal").modal("hide");
+    resumeScanning();
   });
 });
 
-
+$("#productModal").on("hidden.bs.modal", function () {
+  resumeScanning();
+});
 
 // Stop scanning and release resources
 function stopScanning() {
