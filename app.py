@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response, send_file, send_from_directory, jsonify, request, session, redirect, url_for
+from flask import Flask, render_template, request, Response, send_file, send_from_directory, jsonify, request, session, redirect, url_for
 import cv2
 import os
 from gtts import gTTS
@@ -7,11 +7,35 @@ import threading
 from flask_socketio import SocketIO, emit, disconnect
 import base64
 import numpy as np
-from flask import Flask, session, request, redirect, url_for, g
+import json
+#from flask import Flask, session, request, redirect, url_for, g
 from flask_babel import Babel, gettext as _
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
+
+JSON_FILE = 'test_cart.json'
+
+def load_from_json():
+    # If the file doesn't exist, return an empty list
+    if not os.path.exists(JSON_FILE):
+        return []
+    with open(JSON_FILE, 'r') as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return []
+
+def save_to_json(cart_data):
+    with open(JSON_FILE, 'w') as f:
+        json.dump(cart_data, f, indent=4)
+
+app.config.update(
+    SESSION_COOKIE_SECURE=True,   # Required because you are using HTTPS
+    SESSION_COOKIE_HTTPONLY=True, # Prevents JS from messing with the cookie
+    SESSION_COOKIE_SAMESITE='Lax', # Allows the cookie to persist across redirects
+)
+
 app.config['LANGUAGES'] = ['en', 'my', 'zh']
 
 babel = Babel(app)
@@ -57,14 +81,43 @@ def scan():
 
 @app.route('/cart')
 def cart():
-    cart_products = session.get('cart', [])
-    total_price = sum(product['price']*product['quantity'] for product in cart_products)
-    return render_template("cart.html", cart=cart_products, total=total_price)
+    cart_items = load_from_json()
+    
+    total = sum(item.get('price', 0) * item.get('quantity', 1) for item in cart_items)
+    
+    return render_template('cart.html', cart=cart_items, total=total)
+# def cart():
+#     cart_products = session.get('cart', [])
+#     total_price = sum(product['price']*product['quantity'] for product in cart_products)
+#     return render_template("cart.html", cart=cart_products, total=total_price)
+
+def your_tts_function(text):
+    # Create a filename based on the text (hashed or cleaned)
+    # We use a simple hash or timestamp to keep it unique
+    import hashlib
+    clean_text = text.replace(" ", "_").replace(":", "").replace(".", "")
+    filename = f"dynamic_{clean_text}.mp3"
+    filepath = os.path.join(TTS_DIRECTORY, filename)
+    
+    # If we haven't generated this specific sentence yet, create it
+    if not os.path.exists(filepath):
+        tts = gTTS(text=text, lang='en')
+        tts.save(filepath)
+    
+    return filename
+
+@app.route('/tts')
+def tts_api():
+    text = request.args.get('text')
+    # Use your existing function to convert text to mp3
+    filename = your_tts_function(text) 
+    return jsonify({"filename": filename})
 
 @app.route('/get_cart_total')
 def get_cart_total():
-    cart_products = session.get('cart', [])
-    total_price = sum(product['price'] * product['quantity'] for product in cart_products)
+    cart_items = load_from_json()
+
+    total_price = sum(item['price'] * item['quantity'] for item in cart_items)
     return jsonify({'total': total_price})
 
 TTS_DIRECTORY = 'static/tts_output'
@@ -190,16 +243,85 @@ def get_detected():
 
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
-    global detected_product
-    quantity = int(request.form.get('quantity', 1))
-    if 'cart' not in session:
-        session['cart'] = []
-    prod = detected_product.copy()
-    prod['quantity'] = quantity
-    session['cart'].append(prod)
-    detected_product = None
-    session.modified = True
-    return {'status':'ok'}
+    name = request.form.get('name')
+    price = float(request.form.get('price'))
+    quantity_to_add = int(request.form.get('quantity', 1))
+    
+    # 1. Load the existing cart
+    cart = load_from_json()
+    
+    # 2. Check if the item already exists in the cart
+    item_found = False
+    for item in cart:
+        if item['name'] == name:
+            # Item exists! Just add the new quantity to the existing quantity
+            item['quantity'] += quantity_to_add
+            item_found = True
+            break
+            
+    if not item_found:
+        # 3. New item? Add it as a new dictionary entry
+        cart.append({
+            'name': name, 
+            'price': price, 
+            'quantity': quantity_to_add
+        })
+    
+    # 4. Save it back to JSON
+    save_to_json(cart)
+    
+    # 5. Calculate total (Same logic as before)
+    total = sum(item['price'] * item.get('quantity', 1) for item in cart)
+    
+    print(f"Updated Cart: {name} now has quantity {next((i['quantity'] for i in cart if i['name'] == name), 0)}")
+    
+    return jsonify({'success': True, 'total': total})
+
+# @app.route('/add_to_cart', methods=['POST'])
+# def add_to_cart():
+#      # Receive name, price, quantity from frontend POST
+#     name = request.form.get('name')
+#     price = float(request.form.get('price', 0))
+#     quantity = int(request.form.get('quantity', 1))
+
+#     if not name or price <= 0:
+#         return jsonify({'success': False, 'error': 'Invalid product data'})
+
+#     # Get cart from session or create new
+#     cart = session.get('cart', [])
+
+#     # Check if product already in cart, update quantity
+#     for item in cart:
+#         if item['name'] == name:
+#             item['quantity'] += quantity
+#             break
+#     else:
+#         # Add new product to cart
+#         cart.append({
+#             'name': name,
+#             'price': price,
+#             'quantity': quantity
+#         })
+
+#     # Save back to session
+#     session['cart'] = cart
+
+#     # Calculate total for TTS update
+#     total = sum(item['price'] * item['quantity'] for item in cart)
+
+#     return jsonify({'success': True, 'total': total})
+##########################################################################
+
+    # global detected_product
+    # quantity = int(request.form.get('quantity', 1))
+    # if 'cart' not in session:
+    #     session['cart'] = []
+    # prod = detected_product.copy()
+    # prod['quantity'] = quantity
+    # session['cart'].append(prod)
+    # detected_product = None
+    # session.modified = True
+    # return {'status':'ok'}
 
 # @app.route('/add_test_product', methods=['POST'])
 # def add_test_product():

@@ -33,25 +33,29 @@
         </div>
         {% endfor %}
 
-        <div class="cart-total">
-            Total: RM{{ "%.2f"|format(total) }}
+        <div class="cart-total" id="cartTotalText" style="display: flex; align-items: center; justify-content: center; cursor: default;">
+        Total: RM{{ "%.2f"|format(total) }}
+    
+        <img src="{{ url_for('static', filename='img/speaker.svg') }}" 
+     class="speaker-icon" 
+     id="speakerIcon"
+     onclick="announceTotal()" 
+     ontouchstart="this.classList.add('pressed')"
+     ontouchend="this.classList.add('pressed'); setTimeout(() => this.classList.remove('pressed'), 100)"
+     alt="Speaker Icon" 
+     style="width: 35px; height: 35px; margin-left: 15px;">
         </div>
 
         <form id="finishForm" method="post" action="{{ url_for('finish_cart') }}">
-            <button type="submit" class="btn" data-text="Finish">{{ _("Finish") }} <img src="{{ url_for('static', filename='img/finish.svg') }}" alt="Button Icon"> </button>
-                    <script src="{{ url_for('static', filename='tts.js') }}"></script>
-
+            <button type="button" 
+            class="btn" 
+            onclick="playAndFinish(this)" 
+            data-audio="Finish.mp3">{{ _("Finish") }} 
+            <img src="{{ url_for('static', filename='img/finish.svg') }}" alt="Button Icon"></button>
         </form>
+
     {% else %}
         <p class="text-center">{{ _("Cart is empty.") }}</p>
-
-        <script>
-          const audioUrl = `/static/tts_output/Your cart is empty.mp3`;
-          const audio = new Audio(audioUrl);
-          console.log("Audio URL:", audioUrl); 
-          audio.play();
-        </script>
-
         <div class="empty-cart-image-center">      
                <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" width="640" height="480" alt="Button Icon">
         </div>
@@ -60,28 +64,64 @@
     {% endif %}
 </div>
 
-
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const speech = window.speechSynthesis;
+    function announceTotal() {
+    const totalElement = document.getElementById('cartTotalText');
+    if (totalElement) {
+        let totalVal = totalElement.textContent.trim().replace('Total: RM', '');
+        let speechText = "Your total is " + totalVal + " Ringgits";
 
-        function speakText(text) {
-            if (speech.speaking) {
-                speech.cancel();
-            }
-            const utterance = new SpeechSynthesisUtterance(text);
-            speech.speak(utterance);
-        }
+        fetch('/tts?text=' + encodeURIComponent(speechText))
+            .then(response => response.json())
+            .then(data => {
+                const audio = new Audio("/static/tts_output/" + data.filename);
+                audio.play().catch(err => {
+                    console.log("Browser blocked auto-play. User must click the speaker icon.");
+                });
+            });
+    } else {
+        // Handle the "Empty Cart" sound
+        const emptyAudio = new Audio("/static/tts_output/Your cart is empty.mp3");
+        emptyAudio.play().catch(e => console.log("Empty audio blocked"));
+    }
+}
 
-        const cartTotalElement = document.querySelector('.cart-total');
-        
-        // If the cart total element exists, speak the total price
-        if (cartTotalElement) {
-            const cartTotalText = cartTotalElement.textContent.trim().replace('RM','');
-            speakText(cartTotalText + "Ringgits");
+document.addEventListener('DOMContentLoaded', () => {
+    // Try to play automatically (Hopeful Way)
+    announceTotal();
+});
+
+function playAndFinish(buttonElement) {
+    // 1. Path to the sound
+    const audioPath = "/static/tts_output/" + buttonElement.getAttribute('data-audio');
+    const audio = new Audio(audioPath);
+    const form = document.getElementById('finishForm');
+
+    let hasSubmitted = false;
+
+    // Function to submit the form safely
+    const submitForm = () => {
+        if (!hasSubmitted) {
+            hasSubmitted = true;
+            form.submit();
         }
+    };
+
+    // 2. Play the sound
+    audio.play().then(() => {
+        // When audio ends naturally, submit
+        audio.onended = submitForm;
+    }).catch(e => {
+        console.log("Audio play failed:", e);
+        submitForm(); // Submit anyway if audio is blocked
     });
+
+    // 3. Safety Backup: Submit after 1.5 seconds no matter what
+    // This prevents the "stuck" feeling
+    setTimeout(submitForm, 1500);
+}
 </script>
+
 
 
 </body>

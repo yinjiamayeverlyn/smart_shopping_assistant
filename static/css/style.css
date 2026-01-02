@@ -172,3 +172,14 @@ settingsbutton, .settingsbutton {
 .empty-cart-image-center img {
     max-width: 80vw;
 }
+
+.speaker-icon {
+    transition: transform 0.1s ease;
+    cursor: pointer;
+}
+
+/* The "Pressed" state - we will trigger this with JS */
+.speaker-icon.pressed {
+    transform: scale(0.7); 
+    filter: brightness(0.8);
+}

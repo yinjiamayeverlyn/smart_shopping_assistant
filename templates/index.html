@@ -8,19 +8,73 @@
 </head>
 
 <header>
-        <backbutton class="backbutton" onclick=""></backbutton>
+    <backbutton class="backbutton" onclick=""></backbutton>
     <h1>{{ _("Smart Shopping Assistant") }}</h1>
-    <settingsbutton class="settingsbutton">
-    </settingsbutton>
+    <settingsbutton class="settingsbutton"></settingsbutton>
 </header>
 
 <body>
 <div class="container text-center mt-3">
-    <a href="{{ url_for('scan') }}" class="btn btn-primary" data-text="Start scan">{{ _("Start Scan") }} <img src="{{ url_for('static', filename='img/scan.svg') }}" alt="Button Icon"> </a>
-    <a href="{{ url_for('cart') }}" class="btn btn-primary" data-text="View cart">{{ _("View Cart") }} <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" alt="Button Icon"> </a>
 
+    <button type="button" 
+            class="btn btn-primary" 
+            onclick="playAndGo(this)" 
+            data-url="{{ url_for('scan') }}" 
+            data-audio="Start scan.mp3">
+        {{ _("Start Scan") }} 
+        <img src="{{ url_for('static', filename='img/scan.svg') }}" alt="Icon">
+    </button>
+
+    <button type="button" 
+            class="btn btn-primary" 
+            onclick="playAndGo(this)" 
+            data-url="{{ url_for('cart') }}" 
+            data-audio="View cart.mp3">
+        {{ _("View Cart") }} 
+        <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" alt="Icon">
+    </button>
 </div>
+
     <script src="{{ url_for('static', filename='tts.js') }}"></script>
+
+    <script>
+       function playAndGo(buttonElement) {
+       // This looks at the button's data-url and data-audio attributes
+        const targetUrl = buttonElement.getAttribute('data-url');
+        const audioFileName = buttonElement.getAttribute('data-audio');
+    
+        const audioPath = "/static/tts_output/" + encodeURIComponent(audioFileName);
+        const audio = new Audio(audioPath);
+
+        let moved = false;
+
+        const movePage = () => {
+            if(!moved) {
+                moved = true;
+                window.location.href = targetUrl;
+            }
+        };
+
+        // 1. Pre-load the audio
+    audio.load();
+
+    // 2. Play the audio
+    audio.play().then(() => {
+        console.log("Audio started successfully");
+        
+        // 3. Only move when the audio NATURALLY ends
+        audio.onended = movePage;
+
+    }).catch(e => {
+        console.log("Audio blocked or failed:", e);
+        movePage(); // Move anyway if it fails
+    });
+
+    // 4. Safety backup: If audio is very short or glitchy, 
+    // wait at least 2 seconds before forcing the move.
+    setTimeout(movePage, 2500); 
+    }
+    </script>
 
 </body>
 </html>

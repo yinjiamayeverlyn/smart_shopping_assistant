@@ -31,9 +31,13 @@
 
     <!-- View Cart Button -->
     <div>
-        <a href="{{ url_for('cart') }}" class="btn btn-primary" data-text="View cart">{{ _("View Cart") }} <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" alt="Button Icon"> </a>
-        <script src="{{ url_for('static', filename='tts.js') }}"></script>
-
+        <button type="button" 
+          class="btn btn-primary" 
+          onclick="playAndGoModal(this)" 
+          data-url="{{ url_for('cart') }}" 
+          data-audio="View cart.mp3">{{ _("View Cart") }} 
+          <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" alt="Button Icon">
+        </button>
     </div>
 
     <!-- Modal -->
@@ -42,25 +46,116 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="modalTitle">{{ _("Product Detected") }}</h5>
-            <button type="button" class="btn-close" id="closeModal"></button>
+            <button type="button" class="btn-close" id="closeModal" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <p id="modalPrice"></p>
             Quantity: <input type="number" id="modalQty" value="1" min="1">
+
+            <hr>
+            <p><strong>Current Cart Total: <span id="modal-cart-total">RM 0.00</span></strong></p>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-primary" id="addCart">{{ _("Add To Cart") }} <img src="{{ url_for('static', filename='img/add.svg') }}" alt="Button Icon"> </button>
-                   <script src="{{ url_for('static', filename='tts.js') }}"></script>
-            <a href="{{ url_for('cart') }}" class="btn btn-primary" data-text="View cart">{{ _("View Cart") }} <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" alt="Button Icon"> </a>
+            <button id="addCart" type="button" class="btn btn-primary">{{ _("Add To Cart") }} <img src="{{ url_for('static', filename='img/add.svg') }}" alt="Button Icon"> </button>
+
+            <button type="button" 
+            class="btn btn-primary" 
+            onclick="playAndGoModal(this)" 
+            data-url="{{ url_for('cart') }}" 
+            data-audio="View cart.mp3">
+            {{ _("View Cart") }} 
+            <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" alt="Button Icon">
+           </button>
+           
           </div>
         </div>
       </div>
     </div>
 </div>
 
-</script>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="{{ url_for('static', filename='app.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='tts.js') }}"></script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+
+<script>
+    // 1. Create the one-and-only Global Player
+    window.globalPlayer = new Audio();
+
+    // 2. The Unlocker (User must tap the screen once when page loads)
+    function primeAudio() {
+        // Play a tiny silent sound to 'warm up' the speakers
+        window.globalPlayer.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==";
+        window.globalPlayer.play().then(() => {
+            console.log("MOBILE AUDIO UNLOCKED");
+            document.removeEventListener('touchstart', primeAudio);
+            document.removeEventListener('click', primeAudio);
+        });
+    }
+    document.addEventListener('touchstart', primeAudio);
+    document.addEventListener('click', primeAudio);
+
+    // 3. This function replaces the one in tts.js for THIS page only
+    window.speakText = function(text) {
+    if (!text) return;
+    window.globalPlayer.pause();
+
+    // 1. Check if this is a standard button (like "View cart" or "Finish")
+    // These files already exist in your static/tts_output folder
+    const staticButtons = ["View cart", "Finish", "Start scan"];
+    
+    if (staticButtons.includes(text)) {
+        console.log("Playing static button sound:", text);
+        window.globalPlayer.src = "/static/tts_output/" + text + ".mp3";
+        window.globalPlayer.play().catch(e => console.log("Static play failed", e));
+    } 
+    // 2. If it's NOT a static button, it's a dynamic product/price scan
+    else {
+        console.log("Generating dynamic sound for:", text);
+        fetch('/tts?text=' + encodeURIComponent(text))
+            .then(response => response.json())
+            .then(data => {
+                window.globalPlayer.src = "/static/tts_output/" + data.filename + "?t=" + new Date().getTime();
+                window.globalPlayer.play().catch(e => console.log("Dynamic play failed", e));
+            });
+    }
+};
+
+function playAndGoModal(buttonElement) {
+    const targetUrl = buttonElement.getAttribute('data-url');
+    const audioFileName = buttonElement.getAttribute('data-audio');
+    
+    // Path to your pre-generated woman's voice
+    const audioPath = "/static/tts_output/" + audioFileName;
+    const audio = new Audio(audioPath);
+
+    // Stop any other sounds playing
+    if(window.globalPlayer) window.globalPlayer.pause();
+
+    audio.play().then(() => {
+        // Wait for audio to finish, then go
+        audio.onended = function() {
+            window.location.href = targetUrl;
+        };
+    }).catch(e => {
+        console.log("Audio blocked:", e);
+        window.location.href = targetUrl; // Go anyway if audio fails
+    });
+
+    // Safety timeout: If audio is stuck, move after 2 seconds
+    setTimeout(() => {
+        window.location.href = targetUrl;
+    }, 2000);
+}
+
+    // 4. Fixed Back Button to stop "n" sound
+    function goBack() {
+        if(window.globalPlayer) {
+            window.globalPlayer.pause();
+            window.globalPlayer.src = "";
+        }
+        window.location.href = "{{ url_for('index') }}"; 
+    }
+</script>
 </body>
 </html>
