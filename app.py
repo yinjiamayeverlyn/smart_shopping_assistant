@@ -120,6 +120,17 @@ def get_cart_total():
     total_price = sum(item['price'] * item['quantity'] for item in cart_items)
     return jsonify({'total': total_price})
 
+@app.route('/clear_cart', methods=['POST'])
+def clear_cart():
+    try:
+        # This overwrites the file with an empty list
+        with open('test_cart.json', 'w') as f:
+            json.dump([], f)
+        return {"success": True}, 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return {"success": False}, 500
+
 TTS_DIRECTORY = 'static/tts_output'
 os.makedirs(TTS_DIRECTORY, exist_ok=True)
 

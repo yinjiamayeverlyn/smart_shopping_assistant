@@ -45,14 +45,21 @@
      alt="Speaker Icon" 
      style="width: 35px; height: 35px; margin-left: 15px;">
         </div>
-
+<div style="display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 30px;">
         <form id="finishForm" method="post" action="{{ url_for('finish_cart') }}">
             <button type="button" 
-            class="btn" 
+            class="btn btn-primary" 
             onclick="playAndFinish(this)" 
             data-audio="Finish.mp3">{{ _("Finish") }} 
             <img src="{{ url_for('static', filename='img/finish.svg') }}" alt="Button Icon"></button>
         </form>
+
+        <button type="button" 
+            onclick="clearCart()" class="btn-clear" ontouchstart="this.style.opacity='0.5'" 
+        ontouchend="this.style.opacity='1'">Clear Cart
+        </button>
+
+</div>
 
     {% else %}
         <p class="text-center">{{ _("Cart is empty.") }}</p>
@@ -120,9 +127,33 @@ function playAndFinish(buttonElement) {
     // This prevents the "stuck" feeling
     setTimeout(submitForm, 1500);
 }
+
+function clearCart() {
+        if (confirm("Confirm want to clear all items?")) {
+        fetch('/clear_cart', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 1. Manually hide the items so you SEE it is empty
+                // This keeps us on the SAME page so the audio is NOT blocked
+                const container = document.querySelector('.container');
+                container.innerHTML =`<p class="text-center">{{ _("Cart is empty.") }}</p>
+        <div class="empty-cart-image-center">      
+               <img src="{{ url_for('static', filename='img/empty_cart.svg') }}" width="640" height="480" alt="Button Icon">
+        </div>`;
+
+                // 2. Play the audio (The browser allows this because you clicked 'Confirm')
+                let audio = new Audio("{{ url_for('static', filename='tts_output/Your cart is empty.mp3') }}");
+                audio.play();
+
+                // 3. Optional: Reload after 2 seconds just to sync with the server
+                // setTimeout(() => {
+                //     location.reload();
+                // }, 3000);
+            }
+        });
+    }
+    }
 </script>
-
-
-
 </body>
 </html>

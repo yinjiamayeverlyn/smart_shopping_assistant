@@ -183,3 +183,23 @@ settingsbutton, .settingsbutton {
     transform: scale(0.7); 
     filter: brightness(0.8);
 }
+
+.btn-clear {
+    background-color: #fc0606 !important;
+    color: white !important;
+    margin-top: 10px; 
+    width: 100%;    
+}
+
+.btn-clear:hover {
+    background-color: #d30505 !important; 
+    color: white !important;
+}
+
+/* This happens the EXACT moment you press the mouse/finger down */
+.btn-clear:active {
+    background-color: #5a0000 !important; /* A much darker red */
+    transform: translateY(4px); /* Moves the button down 4 pixels */
+    box-shadow: 0.1em 0.2em 0.5em rgba(0, 0, 0, 0.4) !important; /* Shrinks the shadow */
+    transition: 0.1s; /* Makes the "push" feel instant */
+}
