@@ -208,39 +208,6 @@ def handle_stop_scan():
 def handle_disconnect():
     print(f"Client disconnected: {request.sid}")
 
-#---- Video Feed ----#
-# def gen_frames():
-#     global detected_product
-#     cap = cv2.VideoCapture(0)
-#     while True:
-#         success, frame = cap.read()
-#         if not success:
-#             break
-
-#         results = model.predict(frame, imgsz=640, conf=0.3)
-#         for res in results:
-#             for box in res.boxes:
-#                 cls_idx = int(box.cls[0])
-#                 conf = float(box.conf[0])
-#                 if conf > 0.5:
-#                     with lock:
-#                         detected_product = PRODUCTS[cls_idx]
-
-#                     # Draw bounding box
-#                     x1, y1, x2, y2 = map(int, box.xyxy[0])
-#                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0,165,255), 2)
-#                     cv2.putText(frame, f"{PRODUCTS[cls_idx]['name']} {conf:.2f}",
-#                                 (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,0), 2)
-
-#         # Encode frame for MJPEG stream
-#         ret, buffer = cv2.imencode('.jpg', frame)
-#         frame_bytes = buffer.tobytes()
-#         yield (b'--frame\r\n'
-#                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
-# @app.route('/video_feed')
-# def video_feed():
-#     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 # ---- API Endpoints ----
 @app.route('/get_detected')
@@ -287,71 +254,6 @@ def add_to_cart():
     print(f"Updated Cart: {name} now has quantity {next((i['quantity'] for i in cart if i['name'] == name), 0)}")
     
     return jsonify({'success': True, 'total': total})
-
-# @app.route('/add_to_cart', methods=['POST'])
-# def add_to_cart():
-#      # Receive name, price, quantity from frontend POST
-#     name = request.form.get('name')
-#     price = float(request.form.get('price', 0))
-#     quantity = int(request.form.get('quantity', 1))
-
-#     if not name or price <= 0:
-#         return jsonify({'success': False, 'error': 'Invalid product data'})
-
-#     # Get cart from session or create new
-#     cart = session.get('cart', [])
-
-#     # Check if product already in cart, update quantity
-#     for item in cart:
-#         if item['name'] == name:
-#             item['quantity'] += quantity
-#             break
-#     else:
-#         # Add new product to cart
-#         cart.append({
-#             'name': name,
-#             'price': price,
-#             'quantity': quantity
-#         })
-
-#     # Save back to session
-#     session['cart'] = cart
-
-#     # Calculate total for TTS update
-#     total = sum(item['price'] * item['quantity'] for item in cart)
-
-#     return jsonify({'success': True, 'total': total})
-##########################################################################
-
-    # global detected_product
-    # quantity = int(request.form.get('quantity', 1))
-    # if 'cart' not in session:
-    #     session['cart'] = []
-    # prod = detected_product.copy()
-    # prod['quantity'] = quantity
-    # session['cart'].append(prod)
-    # detected_product = None
-    # session.modified = True
-    # return {'status':'ok'}
-
-# @app.route('/add_test_product', methods=['POST'])
-# def add_test_product():
-#     if 'cart' not in session:
-#         session['cart'] = []
-
-#     test_product = {
-#         'id': 123,  # example product id
-#         'name': 'Test Product',  # product name
-#         'price': 19.99  # product price
-#     }
-    
-#     quantity = int(request.form.get('quantity', 1))
-#     test_product['quantity'] = quantity
-
-#     session['cart'].append(test_product)
-#     session.modified = True
-    
-#     return {'status': 'ok', 'product': test_product}
 
 
 @app.route('/cancel_detected', methods=['POST'])
