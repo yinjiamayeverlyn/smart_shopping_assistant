@@ -89,8 +89,6 @@ Enter the URL:
 https://<Laptop_IP_Address>:5000
 ```
 
-Example:https://192.168.1.100:5000
-
 ### Step 8: Security Warining (Normal)
 
 Because this system uses a self-signed certificate:
