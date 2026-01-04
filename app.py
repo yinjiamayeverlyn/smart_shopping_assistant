@@ -31,7 +31,7 @@ def save_to_json(cart_data):
         json.dump(cart_data, f, indent=4)
 
 app.config.update(
-    SESSION_COOKIE_SECURE=True,   # Required because you are using HTTPS
+    SESSION_COOKIE_SECURE=True,   # HTTPS
     SESSION_COOKIE_HTTPONLY=True, # Prevents JS from messing with the cookie
     SESSION_COOKIE_SAMESITE='Lax', # Allows the cookie to persist across redirects
 )
@@ -109,7 +109,7 @@ def your_tts_function(text):
 @app.route('/tts')
 def tts_api():
     text = request.args.get('text')
-    # Use your existing function to convert text to mp3
+    # Converts text to mp3
     filename = your_tts_function(text) 
     return jsonify({"filename": filename})
 

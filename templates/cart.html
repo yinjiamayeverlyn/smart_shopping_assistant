@@ -74,18 +74,43 @@
 <script>
     function announceTotal() {
     const totalElement = document.getElementById('cartTotalText');
-    if (totalElement) {
-        let totalVal = totalElement.textContent.trim().replace('Total: RM', '');
-        let speechText = "Your total is " + totalVal + " Ringgits";
 
-        fetch('/tts?text=' + encodeURIComponent(speechText))
-            .then(response => response.json())
-            .then(data => {
-                const audio = new Audio("/static/tts_output/" + data.filename);
-                audio.play().catch(err => {
-                    console.log("Browser blocked auto-play. User must click the speaker icon.");
-                });
-            });
+const speech = window.speechSynthesis;
+    const audioCache = {};
+
+    window.speakText = function (text) {
+    if (!text) return;
+
+    if (speech.speaking) {
+        speech.cancel();
+    }
+
+    if (audioCache[text]) {
+        audioCache[text].currentTime = 0;
+        audioCache[text].play();
+    } else {
+        const utterance = new SpeechSynthesisUtterance(text);
+        speech.speak(utterance);
+    }
+};
+
+
+    if (totalElement) {
+
+
+         let totalVal = totalElement.textContent.trim().replace('Total: RM', '');
+         let speechText = "Your total is " + totalVal + " Ringgits";
+         speakText(speechText);
+
+            // fetch('/tts?text=' + encodeURIComponent(speechText))
+            // .then(response => response.json())
+            // .then(data => {
+            //     const audio = new Audio("/static/tts_output/" + data.filename);
+            //     audio.play().catch(err => {
+            //         console.log("Browser blocked auto-play. User must click the speaker icon.");
+            //     });
+            // });
+    
     } else {
         // Handle the "Empty Cart" sound
         const emptyAudio = new Audio("/static/tts_output/Your cart is empty.mp3");

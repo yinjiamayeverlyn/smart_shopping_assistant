@@ -1,1 +1,7 @@
-[]
+[
+    {
+        "name": "Maggi Mee",
+        "price": 4.8,
+        "quantity": 4
+    }
+]

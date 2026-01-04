@@ -101,7 +101,6 @@
     window.globalPlayer.pause();
 
     // 1. Check if this is a standard button (like "View cart" or "Finish")
-    // These files already exist in your static/tts_output folder
     const staticButtons = ["View cart", "Finish", "Start scan"];
     
     if (staticButtons.includes(text)) {
@@ -124,8 +123,6 @@
 function playAndGoModal(buttonElement) {
     const targetUrl = buttonElement.getAttribute('data-url');
     const audioFileName = buttonElement.getAttribute('data-audio');
-    
-    // Path to your pre-generated woman's voice
     const audioPath = "/static/tts_output/" + audioFileName;
     const audio = new Audio(audioPath);
 
